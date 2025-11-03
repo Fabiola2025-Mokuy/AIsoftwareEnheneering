@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Course, Lesson, UserProgress } from '../types';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 import { LessonItem } from './LessonItem';
 import { ArrowLeft, Clock, BookOpen, Loader2, Award } from 'lucide-react';
 
@@ -15,14 +16,7 @@ export function CourseDetails({ courseId, onBack }: CourseDetailsProps) {
   const [progress, setProgress] = useState<Map<string, UserProgress>>(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [userId] = useState(() => {
-    let id = localStorage.getItem('e-learning-user-id');
-    if (!id) {
-      id = crypto.randomUUID();
-      localStorage.setItem('e-learning-user-id', id);
-    }
-    return id;
-  });
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchCourseData();
@@ -40,11 +34,13 @@ export function CourseDetails({ courseId, onBack }: CourseDetailsProps) {
           .select('*')
           .eq('course_id', courseId)
           .order('order_index', { ascending: true }),
-        supabase
-          .from('user_progress')
-          .select('*')
-          .eq('course_id', courseId)
-          .eq('user_id', userId),
+        user
+          ? supabase
+              .from('user_progress')
+              .select('*')
+              .eq('course_id', courseId)
+              .eq('user_id', user.id)
+          : { data: null, error: null },
       ]);
 
       if (courseResult.error) throw courseResult.error;
@@ -68,6 +64,8 @@ export function CourseDetails({ courseId, onBack }: CourseDetailsProps) {
   };
 
   const handleToggleComplete = async (lessonId: string, completed: boolean) => {
+    if (!user) return;
+
     try {
       const existingProgress = progress.get(lessonId);
 
@@ -95,7 +93,7 @@ export function CourseDetails({ courseId, onBack }: CourseDetailsProps) {
         const { data, error } = await supabase
           .from('user_progress')
           .insert({
-            user_id: userId,
+            user_id: user.id,
             lesson_id: lessonId,
             course_id: courseId,
             completed,
