@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Course } from '../types';
 import { supabase } from '../lib/supabase';
 import { CourseCard } from './CourseCard';
-import { Loader2 } from 'lucide-react';
+import { GraduationCap, Loader2 } from 'lucide-react';
 
 interface CourseListProps {
   onCourseSelect: (courseId: string) => void;
@@ -63,7 +63,10 @@ export function CourseList({ onCourseSelect }: CourseListProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold text-gray-900 mb-3">Available Courses</h2>
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <GraduationCap className="w-12 h-12 text-blue-600" />
+          <h1 className="text-4xl font-bold text-gray-900">E-Learning Platform</h1>
+        </div>
         <p className="text-gray-600 text-lg max-w-2xl mx-auto">
           Expand your knowledge with our curated courses. Learn at your own pace and track your progress.
         </p>
